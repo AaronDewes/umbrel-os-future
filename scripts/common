@@ -12,7 +12,7 @@ bootstrap(){
 	BOOTSTRAP_ARGS+=(--arch $BUILD_ARCH)
 	BOOTSTRAP_ARGS+=(--include gnupg)
 	BOOTSTRAP_ARGS+=(--foreign)
-	BOOTSTRAP_ARGS+=(--no-second-stage)
+	BOOTSTRAP_ARGS+=(--skip-second-stage)
 	BOOTSTRAP_ARGS+=(--components "main,contrib,non-free")
 	BOOTSTRAP_ARGS+=(--include gnupg)
 	BOOTSTRAP_ARGS+=(--keyring "${STAGE_DIR}/files/debian.gpg")
