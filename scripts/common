@@ -10,6 +10,8 @@ bootstrap(){
 	export http_proxy=${APT_PROXY}
 
 	BOOTSTRAP_ARGS+=(--arch $BUILD_ARCH)
+	BOOTSTRAP_ARGS+=(--include gnupg)
+	BOOTSTRAP_ARGS+=(--foreign)
 	BOOTSTRAP_ARGS+=(--components "main,contrib,non-free")
 	BOOTSTRAP_ARGS+=(--include gnupg)
 	BOOTSTRAP_ARGS+=(--keyring "${STAGE_DIR}/files/debian.gpg")
@@ -17,6 +19,12 @@ bootstrap(){
 	printf -v BOOTSTRAP_STR '%q ' "${BOOTSTRAP_ARGS[@]}"
 
 	capsh --drop=cap_setfcap -- -c "'${BOOTSTRAP_CMD}' $BOOTSTRAP_STR" || true
+
+	if [ "$BUILD_ARCH" != $(dpkg --print-architecture) ]; then
+		mkdir -p "${ROOTFS_DIR}/usr/bin"
+		cp /usr/bin/qemu-*-static "${ROOTFS_DIR}/usr/bin"
+		capsh --drop=cap_setfcap "--chroot=${ROOTFS_DIR}/" -- -e  "/debootstrap/debootstrap --second-stage"
+	fi
 
 	if [ -d "$2/debootstrap" ]; then
 		rmdir "$2/debootstrap"
