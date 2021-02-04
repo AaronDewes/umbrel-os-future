@@ -4,14 +4,10 @@ log (){
 export -f log
 
 bootstrap(){
-	local BOOTSTRAP_CMD=debootstrap
+	local BOOTSTRAP_CMD=qemu-debootstrap
 	local BOOTSTRAP_ARGS=()
 
 	export http_proxy=${APT_PROXY}
-
-	if [ "$(dpkg --print-architecture)" !=  "arm64" ]; then
-		BOOTSTRAP_CMD=qemu-debootstrap
-	fi
 
 	BOOTSTRAP_ARGS+=(--components "main,contrib,non-free")
 	BOOTSTRAP_ARGS+=(--include gnupg)
