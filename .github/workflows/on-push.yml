@@ -4,8 +4,11 @@ on: ["push", "pull_request"]
 jobs:
     build:
 
-        runs-on: ubuntu-18.04
-        
+        runs-on: ubuntu-20.04
+        strategy:
+          matrix:
+            arch: [arm64, amd64]
+
         steps:
         
         - uses: actions/checkout@v1
@@ -14,7 +17,7 @@ jobs:
           run: sudo apt-get update
 
         - name: Install dependencies
-          run: sudo apt-get -y install quilt qemu-user-static debootstrap bsdtar
+          run: sudo apt-get -y install quilt qemu-user-static debootstrap libarchive-tools
 
         - name: Nuke current Docker installation
           run: |
@@ -43,11 +46,11 @@ jobs:
 
         - name: Run build script
           run: |
-              echo "Building $IMAGE_NAME"
-              sudo IMG_FILENAME=$IMAGE_NAME ZIP_FILENAME=$IMAGE_NAME UMBREL_OS_VERSION=$UMBREL_OS_VERSION ./build.sh
+              echo "Building $IMAGE_NAME for ${{matrix.arch}}"
+              sudo IMG_FILENAME=$IMAGE_NAME ZIP_FILENAME=$IMAGE_NAME UMBREL_OS_VERSION=$UMBREL_OS_VERSION BUILD_ARCH=${{matrix.arch}} ./build.sh
 
         - name: Copy ZIP to current working dir
-          run: cp deploy/*.zip ./
+          run: cp deploy/${{ env.IMAGE_NAME }}.img ./
 
         - name: Debug current working dir
           run: ls -la
@@ -55,5 +58,5 @@ jobs:
         - name: Upload artifact
           uses: actions/upload-artifact@v2
           with:
-            path: ${{ env.IMAGE_NAME }}.zip
-            name: ${{ env.IMAGE_NAME }}.zip
+            path: ${{ env.IMAGE_NAME }}.img
+            name: ${{ env.IMAGE_NAME }}.img

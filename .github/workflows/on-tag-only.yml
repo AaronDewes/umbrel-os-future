@@ -8,8 +8,11 @@ on:
 jobs:
     build:
 
-        runs-on: ubuntu-18.04
-        
+        runs-on: ubuntu-20.04
+        strategy:
+          matrix:
+            arch: [arm64, amd64]
+
         steps:
         
         - uses: actions/checkout@v1
@@ -18,7 +21,7 @@ jobs:
           run: sudo apt-get update
 
         - name: Install dependencies
-          run: sudo apt-get -y install quilt qemu-user-static debootstrap bsdtar
+          run: sudo apt-get -y install quilt qemu-user-static debootstrap libarchive-tools
 
         - name: Nuke current Docker installation
           run: |
@@ -47,8 +50,8 @@ jobs:
 
         - name: Run build script
           run: |
-                echo "Building $IMAGE_NAME"
-                sudo IMG_FILENAME=$IMAGE_NAME ZIP_FILENAME=$IMAGE_NAME UMBREL_OS_VERSION=$UMBREL_OS_VERSION ./build.sh
+                echo "Building $IMAGE_NAME for ${{matrix.arch}}"
+                sudo IMG_FILENAME=$IMAGE_NAME ZIP_FILENAME=$IMAGE_NAME UMBREL_OS_VERSION=$UMBREL_OS_VERSION BUILD_ARCH=${{matrix.arch}} ./build.sh
 
         - name: Copy ZIP to current working dir
           run: cp deploy/*.zip ./
@@ -74,6 +77,5 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           with:
             upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-            asset_path: ${{ env.IMAGE_NAME }}.zip
-            asset_name: ${{ env.IMAGE_NAME }}.zip
-            asset_content_type: application/gzip
+            asset_path: ${{ env.IMAGE_NAME }}.img
+            asset_name: ${{ env.IMAGE_NAME }}.img
