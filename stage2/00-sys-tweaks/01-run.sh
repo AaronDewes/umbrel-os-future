@@ -43,18 +43,9 @@ if [ ! -z ${GITHUB_USERNAME} ]; then
     curl "https://github.com/${GITHUB_USERNAME}.keys" > authorized_keys
 fi
 
-if [ "${USE_QEMU}" = "1" ]; then
-	echo "enter QEMU mode"
-	install -m 644 files/90-qemu.rules "${ROOTFS_DIR}/etc/udev/rules.d/"
-	on_chroot << EOF
-systemctl disable resize2fs_once
-EOF
-	echo "leaving QEMU mode"
-else
-	on_chroot << EOF
+on_chroot << EOF
 systemctl enable resize2fs_once
 EOF
-fi
 
 on_chroot <<EOF
 for GRP in input spi i2c gpio; do
